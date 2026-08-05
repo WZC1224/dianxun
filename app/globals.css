@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --board: #d5dce6;
+  --slip: #f4f7fb;
+  --ink: #0e1621;
+  --mute: #5c6b7a;
+  --live: #0b8f8c;
+  --long: #1b7f5a;
+  --short: #c23b3b;
+  --rule: #b8c2ce;
+  --radius: 8px;
+}
+
+@theme inline {
+  --color-board: var(--board);
+  --color-slip: var(--slip);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-live: var(--live);
+  --color-long: var(--long);
+  --color-short: var(--short);
+  --color-rule: var(--rule);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100dvh;
+  background: var(--board);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+  margin: 0;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-plex-sans), sans-serif;
+}
+
+.font-data {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+.live-dot {
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+
+  .flash-row {
+    animation: none !important;
+  }
+}
+
+@keyframes flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flash-row {
+  animation: flash-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
