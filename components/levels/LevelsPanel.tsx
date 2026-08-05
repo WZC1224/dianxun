@@ -35,32 +35,32 @@ export function LevelsPanel() {
   }, [symbol]);
 
   return (
-    <div className="space-y-5">
-      <header>
-        <p className="font-display text-lg text-live">点讯</p>
-        <h1 className="text-2xl font-semibold text-ink">交易点位</h1>
-      </header>
-
-      <div className="flex gap-4 border-b border-rule" role="tablist">
-        {LEVEL_SYMBOLS.map((s) => {
-          const active = s === symbol;
-          return (
-            <button
-              key={s}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              className={`pb-2 text-sm transition-colors ${
-                active
-                  ? "border-b-2 border-live font-semibold text-live"
-                  : "text-mute"
-              }`}
-              onClick={() => setSymbol(s)}
-            >
-              {s}
-            </button>
-          );
-        })}
+    <div className="pb-4">
+      <div
+        className="sticky top-0 z-10 -mx-3.5 mb-4 border-b border-rule bg-board px-3.5 pt-3"
+        role="tablist"
+      >
+        <div className="flex gap-1">
+          {LEVEL_SYMBOLS.map((s) => {
+            const active = s === symbol;
+            return (
+              <button
+                key={s}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`-mb-px px-3 pb-2.5 text-sm transition-colors ${
+                  active
+                    ? "border-b-2 border-live font-semibold text-live"
+                    : "text-mute hover:text-ink"
+                }`}
+                onClick={() => setSymbol(s)}
+              >
+                {s}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {loading ? (
@@ -73,18 +73,20 @@ export function LevelsPanel() {
       ) : null}
 
       {data && !loading ? (
-        <div className="space-y-6">
+        <div className="panel space-y-0 divide-y divide-rule overflow-hidden">
           <Metric
             label={data.sideBias === "short" ? "卖出区间" : "买入区间"}
             value={`${fmt(data.entryLow)} - ${fmt(data.entryHigh)}`}
             tone={data.sideBias === "short" ? "short" : "long"}
           />
-          <Metric label="止盈" value={fmt(data.takeProfit)} tone="live" />
+          <Metric label="止盈" value={fmt(data.takeProfit)} tone="ink" />
           <Metric label="止损" value={fmt(data.stopLoss)} tone="short" />
 
-          <div className="border-t border-dashed border-rule pt-4">
+          <div className="px-4 py-4">
             <h2 className="text-sm font-medium text-ink">交易思路</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink">{data.note}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink">
+              {data.note}
+            </p>
             <p className="mt-2 font-data text-xs text-mute">
               {data.method} · 偏向{" "}
               {data.sideBias === "long"
@@ -97,7 +99,9 @@ export function LevelsPanel() {
         </div>
       ) : null}
 
-      <Disclaimer full />
+      <div className="pt-4">
+        <Disclaimer full />
+      </div>
     </div>
   );
 }
@@ -109,18 +113,20 @@ function Metric({
 }: {
   label: string;
   value: string;
-  tone: "long" | "short" | "live";
+  tone: "long" | "short" | "ink";
 }) {
   const color =
     tone === "long"
       ? "text-long"
       : tone === "short"
         ? "text-short"
-        : "text-live";
+        : "text-ink";
   return (
-    <div className="border-b border-dashed border-rule pb-4">
-      <div className={`text-sm ${color}`}>{label}</div>
-      <div className={`font-data mt-1 text-3xl font-medium tracking-tight ${color}`}>
+    <div className="px-4 py-4">
+      <div className={`text-xs font-medium tracking-wide ${color}`}>{label}</div>
+      <div
+        className={`font-data mt-1.5 text-[1.75rem] font-medium leading-none tracking-tight ${color}`}
+      >
         {value}
         <span className="ml-2 text-sm font-normal text-mute">USDT</span>
       </div>

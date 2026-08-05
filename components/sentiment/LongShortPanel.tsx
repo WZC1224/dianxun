@@ -28,12 +28,8 @@ export function LongShortPanel() {
   }, []);
 
   return (
-    <div className="space-y-5">
-      <header>
-        <p className="font-display text-lg text-live">点讯</p>
-        <h1 className="text-2xl font-semibold text-ink">多空比</h1>
-        <p className="mt-1 text-sm text-mute">多空持仓人数比例</p>
-      </header>
+    <div className="space-y-4 pb-4 pt-3">
+      <p className="text-sm text-mute">多空持仓人数比例</p>
 
       {loading ? (
         <p className="py-10 text-center text-sm text-mute">加载中...</p>
@@ -44,10 +40,10 @@ export function LongShortPanel() {
         </p>
       ) : null}
 
-      <ul className="divide-y divide-rule border-y border-rule">
+      <ul className="panel divide-y divide-rule overflow-hidden">
         {rows.map((row) => (
-          <li key={row.symbol} className="py-4">
-            <div className="mb-2 flex items-end justify-between gap-2">
+          <li key={row.symbol} className="px-4 py-4">
+            <div className="mb-2.5 flex items-end justify-between gap-2">
               <div>
                 <div className="font-medium text-ink">{row.symbol}</div>
                 <div className="text-xs text-mute">{row.name}</div>
@@ -61,7 +57,7 @@ export function LongShortPanel() {
               </div>
             </div>
             <div
-              className="flex h-2 overflow-hidden rounded-[length:var(--radius)] bg-rule"
+              className="flex h-2 overflow-hidden rounded-full bg-rule"
               aria-hidden
             >
               <div
@@ -78,9 +74,11 @@ export function LongShortPanel() {
       </ul>
 
       {funding ? (
-        <p className="font-data text-sm text-ink">
+        <p className="panel px-4 py-3 font-data text-sm text-ink">
           {funding.label}{" "}
-          <span className="text-long">
+          <span
+            className={funding.ratePct >= 0 ? "text-long" : "text-short"}
+          >
             {funding.ratePct >= 0 ? "+" : ""}
             {funding.ratePct.toFixed(4)}% ({funding.intervalHours}h)
           </span>

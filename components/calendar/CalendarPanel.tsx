@@ -36,30 +36,27 @@ export function CalendarPanel() {
   }, [events]);
 
   return (
-    <div className="space-y-5">
-      <header>
-        <p className="font-display text-lg text-live">点讯</p>
-        <h1 className="text-2xl font-semibold text-ink">大事日历</h1>
-      </header>
-
-      <div className="flex gap-4 border-b border-rule">
-        {([7, 30] as const).map((d) => {
-          const active = days === d;
-          return (
-            <button
-              key={d}
-              type="button"
-              className={`pb-2 text-sm ${
-                active
-                  ? "border-b-2 border-live font-semibold text-live"
-                  : "text-mute"
-              }`}
-              onClick={() => setDays(d)}
-            >
-              {d}天
-            </button>
-          );
-        })}
+    <div className="pb-4">
+      <div className="sticky top-0 z-10 -mx-3.5 mb-4 border-b border-rule bg-board px-3.5 pt-3">
+        <div className="flex gap-1">
+          {([7, 30] as const).map((d) => {
+            const active = days === d;
+            return (
+              <button
+                key={d}
+                type="button"
+                className={`-mb-px px-3 pb-2.5 text-sm transition-colors ${
+                  active
+                    ? "border-b-2 border-live font-semibold text-live"
+                    : "text-mute hover:text-ink"
+                }`}
+                onClick={() => setDays(d)}
+              >
+                {d}天
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {loading ? (
@@ -76,20 +73,24 @@ export function CalendarPanel() {
         </p>
       ) : null}
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {groups.map(([day, list]) => (
           <section key={day}>
-            <h2 className="mb-2 text-sm font-semibold text-live">{day}</h2>
-            <ul className="divide-y divide-rule border-y border-rule">
+            <h2 className="mb-2 text-xs font-semibold tracking-wide text-live">
+              {day}
+            </h2>
+            <ul className="panel divide-y divide-rule overflow-hidden">
               {list.map((e) => (
-                <li key={e.id} className="py-3">
+                <li key={e.id} className="px-3 py-3">
                   <div className="flex gap-3 text-sm">
                     <span className="font-data w-12 shrink-0 text-mute">
                       {formatClock(e.startsAt)}
                     </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-baseline gap-2">
-                        <span className="text-xs text-live">{e.type}</span>
+                        <span className="font-data text-[10px] text-live">
+                          {e.type}
+                        </span>
                         <span className="text-ink">{e.title}</span>
                       </div>
                       {e.detail ? (

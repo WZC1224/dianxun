@@ -1,15 +1,35 @@
 @import "tailwindcss";
 
+/* 默认暗色；系统浅色时自动换皮 */
 :root {
-  --board: #d5dce6;
-  --slip: #f4f7fb;
-  --ink: #0e1621;
-  --mute: #5c6b7a;
-  --live: #0b8f8c;
-  --long: #1b7f5a;
-  --short: #c23b3b;
-  --rule: #b8c2ce;
+  --board: #0b0f14;
+  --slip: #151b24;
+  --ink: #eef2f7;
+  --mute: #8b97a8;
+  --live: #2dd4bf;
+  --long: #0ecb81;
+  --short: #f6465d;
+  --rule: #2a3340;
   --radius: 8px;
+  --glow: rgba(45, 212, 191, 0.07);
+  --line: rgba(255, 255, 255, 0.03);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --board: #e8ecf1;
+    --slip: #ffffff;
+    --ink: #0e1621;
+    --mute: #5c6b7a;
+    --live: #0d9488;
+    --long: #059669;
+    --short: #dc2626;
+    --rule: #cfd6df;
+    --glow: rgba(13, 148, 136, 0.08);
+    --line: rgba(14, 22, 33, 0.04);
+    color-scheme: light;
+  }
 }
 
 @theme inline {
@@ -40,14 +60,22 @@ body {
 body {
   font-family: var(--font-plex-sans), system-ui, sans-serif;
   margin: 0;
+  background-color: var(--board);
+  background-image:
+    radial-gradient(ellipse 100% 70% at 50% -30%, var(--glow), transparent 60%),
+    linear-gradient(var(--line) 1px, transparent 1px);
+  background-size: auto, 100% 32px;
+  background-attachment: fixed;
 }
 
 .font-display {
   font-family: var(--font-display), var(--font-plex-sans), sans-serif;
+  letter-spacing: -0.03em;
 }
 
 .font-data {
   font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 @keyframes live-pulse {
@@ -58,12 +86,37 @@ body {
   }
   50% {
     opacity: 0.45;
-    transform: scale(0.85);
+    transform: scale(0.88);
   }
 }
 
 .live-dot {
   animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flash-row {
+  animation: flash-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nav-indicator {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel {
+  border: 1px solid var(--rule);
+  background: var(--slip);
+  border-radius: var(--radius);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -74,19 +127,8 @@ body {
   .flash-row {
     animation: none !important;
   }
-}
 
-@keyframes flash-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
+  .nav-indicator {
+    transition: none;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.flash-row {
-  animation: flash-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

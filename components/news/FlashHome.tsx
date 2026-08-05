@@ -48,50 +48,67 @@ export function FlashHome() {
   }, [load]);
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-end gap-2 pt-2">
-        <h1 className="font-display text-5xl tracking-tight text-ink">点讯</h1>
-        <span
-          className="live-dot mb-2 inline-block h-2 w-2 rounded-full bg-live"
-          aria-label="实时"
-        />
-      </header>
-
+    <div className="flex min-h-full flex-col">
       <section
         aria-label="主流币点位胶带"
-        className="rounded-[length:var(--radius)] border border-rule bg-slip px-3 py-2"
+        className="sticky top-0 z-10 -mx-3.5 border-b border-rule bg-board px-3.5 py-2.5"
       >
-        <div className="grid grid-cols-3 gap-2">
-          {tape.length === 0
-            ? ["BTC", "ETH", "SOL"].map((s) => (
-                <div key={s} className="text-xs text-mute">
-                  {s} -
-                </div>
-              ))
-            : tape.map((t) => (
-                <div key={t.symbol} className="min-w-0">
-                  <div className="text-xs font-medium text-ink">{t.symbol}</div>
-                  <div className="font-data text-sm text-ink">
-                    {formatPrice(t.last)}
-                  </div>
-                  <div
-                    className={`truncate text-[11px] ${
-                      t.bias === "long" ? "text-long" : "text-short"
-                    }`}
-                  >
-                    {t.entryHint}
-                  </div>
-                </div>
-              ))}
+        <div className="panel px-3 py-2.5">
+          <div className="flex items-stretch gap-3">
+            <div className="flex flex-col items-center justify-center gap-1 border-r border-rule pr-3">
+              <span
+                className="live-dot inline-block h-2 w-2 rounded-full bg-live"
+                aria-label="实时"
+              />
+              <span className="font-data text-[9px] text-mute">实时</span>
+            </div>
+            <div className="grid min-w-0 flex-1 grid-cols-3 gap-3">
+              {tape.length === 0
+                ? ["BTC", "ETH", "SOL"].map((s) => (
+                    <div key={s} className="text-xs text-mute">
+                      {s} -
+                    </div>
+                  ))
+                : tape.map((t) => (
+                    <div key={t.symbol} className="min-w-0">
+                      <div className="text-[11px] font-medium text-mute">
+                        {t.symbol}
+                      </div>
+                      <div
+                        className={`font-data mt-0.5 text-[15px] leading-none ${
+                          t.bias === "long"
+                            ? "text-long"
+                            : t.bias === "short"
+                              ? "text-short"
+                              : "text-ink"
+                        }`}
+                      >
+                        {formatPrice(t.last)}
+                      </div>
+                      <div
+                        className={`mt-1 truncate text-[10px] leading-tight ${
+                          t.bias === "long"
+                            ? "text-long"
+                            : t.bias === "short"
+                              ? "text-short"
+                              : "text-mute"
+                        }`}
+                      >
+                        {t.entryHint}
+                      </div>
+                    </div>
+                  ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      <section aria-label="快讯">
+      <section aria-label="快讯" className="flex-1 py-3">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-ink">快讯</h2>
+          <h2 className="text-sm font-semibold text-ink">最新动态</h2>
           <button
             type="button"
-            className="text-xs text-live"
+            className="rounded-[length:var(--radius)] px-2 py-1 text-xs text-live transition-colors hover:bg-slip"
             onClick={() => {
               setLoading(true);
               void load();
@@ -102,36 +119,39 @@ export function FlashHome() {
         </div>
 
         {loading && items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-mute">加载中...</p>
+          <p className="py-10 text-center text-sm text-mute">加载中...</p>
         ) : null}
         {error ? (
-          <p className="py-8 text-center text-sm text-short" role="alert">
+          <p className="py-10 text-center text-sm text-short" role="alert">
             {error}
           </p>
         ) : null}
         {!loading && !error && items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-mute">
+          <p className="py-10 text-center text-sm text-mute">
             暂无快讯。稍后再刷新。
           </p>
         ) : null}
 
-        <ol className="relative space-y-0 border-l border-rule pl-4">
+        <ol className="panel divide-y divide-rule overflow-hidden">
           {items.map((item, i) => (
             <li
               key={item.id}
-              className="flash-row relative pb-5"
-              style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+              className="flash-row px-3 py-3.5"
+              style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
             >
-              <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-slip bg-live" />
-              <div className="font-data text-xs text-live">
-                {formatClock(item.publishedAt)}
+              <div className="flex gap-3">
+                <time className="font-data w-12 shrink-0 pt-0.5 text-[11px] text-live">
+                  {formatClock(item.publishedAt)}
+                </time>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] leading-snug text-ink">
+                    {item.title}
+                  </p>
+                  <p className="mt-1.5 text-[11px] text-mute">
+                    {item.source} · {formatRelativeTime(item.publishedAt)}
+                  </p>
+                </div>
               </div>
-              <p className="mt-0.5 text-[15px] leading-snug text-ink">
-                {item.title}
-              </p>
-              <p className="mt-1 text-xs text-mute">
-                {item.source} · {formatRelativeTime(item.publishedAt)}
-              </p>
             </li>
           ))}
         </ol>
@@ -139,15 +159,17 @@ export function FlashHome() {
         {cursor ? (
           <button
             type="button"
-            className="mt-2 w-full rounded-[length:var(--radius)] border border-rule bg-slip py-2 text-sm text-ink"
+            className="panel mt-3 w-full py-2.5 text-sm text-mute transition-colors hover:text-ink"
             onClick={() => void load(cursor, true)}
           >
             加载更多
           </button>
         ) : null}
-      </section>
 
-      <Disclaimer />
+        <div className="pb-4 pt-3">
+          <Disclaimer />
+        </div>
+      </section>
     </div>
   );
 }
