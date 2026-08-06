@@ -5,6 +5,8 @@ import type { NewsItem } from "@/lib/types";
 import { formatClock, formatRelativeTime } from "@/lib/time";
 import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
+import { EmptyState } from "@/components/shell/EmptyState";
+import { networkErrorMessage } from "@/lib/network";
 import { readWatchlist } from "@/lib/watchlist";
 
 type TapeItem = {
@@ -50,7 +52,7 @@ export function FlashHome() {
         });
       }
     } catch {
-      setError("快讯加载失败。检查网络后重试。");
+      setError(networkErrorMessage("快讯加载失败。检查网络后重试。"));
     } finally {
       setLoading(false);
     }
@@ -168,14 +170,27 @@ export function FlashHome() {
           <p className="py-10 text-center text-sm text-mute">加载中...</p>
         ) : null}
         {error ? (
-          <p className="py-10 text-center text-sm text-short" role="alert">
-            {error}
-          </p>
+          <EmptyState
+            title={error}
+            detail="可先浏览已打开内容；网络恢复后再刷新。"
+            actionLabel="重试"
+            onAction={() => {
+              setLoading(true);
+              void load();
+            }}
+            tone="short"
+          />
         ) : null}
         {!loading && !error && items.length === 0 ? (
-          <p className="py-10 text-center text-sm text-mute">
-            暂无快讯。稍后再刷新。
-          </p>
+          <EmptyState
+            title="暂无快讯"
+            detail="稍后再刷新，或检查数据源是否可用。"
+            actionLabel="刷新"
+            onAction={() => {
+              setLoading(true);
+              void load();
+            }}
+          />
         ) : null}
 
         <ol className="panel divide-y divide-rule overflow-hidden">

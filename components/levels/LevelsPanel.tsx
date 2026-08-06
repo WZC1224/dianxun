@@ -5,6 +5,8 @@ import type { LevelSnapshot } from "@/lib/types";
 import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
 import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
+import { EmptyState } from "@/components/shell/EmptyState";
+import { networkErrorMessage } from "@/lib/network";
 import {
   readWatchlist,
   toggleWatchlist,
@@ -19,6 +21,7 @@ export function LevelsPanel() {
   const [degraded, setDegraded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [retryTick, setRetryTick] = useState(0);
 
   useEffect(() => {
     const list = readWatchlist();
@@ -47,11 +50,11 @@ export function LevelsPanel() {
       })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setError("点位加载失败。稍后重试。");
+        setError(networkErrorMessage("点位加载失败。稍后重试。"));
         setLoading(false);
       });
     return () => controller.abort();
-  }, [symbol]);
+  }, [symbol, retryTick]);
 
   const starred = watchlist.includes(symbol);
 
@@ -112,9 +115,13 @@ export function LevelsPanel() {
         <p className="py-10 text-center text-sm text-mute">计算中...</p>
       ) : null}
       {error ? (
-        <p className="py-10 text-center text-sm text-short" role="alert">
-          {error}
-        </p>
+        <EmptyState
+          title={error}
+          detail="切换品种或恢复网络后再试。"
+          actionLabel="重试"
+          onAction={() => setRetryTick((n) => n + 1)}
+          tone="short"
+        />
       ) : null}
 
       {data && !loading ? (

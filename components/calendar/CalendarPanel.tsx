@@ -5,6 +5,8 @@ import type { CalendarEvent, CalendarEventType } from "@/lib/types";
 import { formatClock, formatDayLabel } from "@/lib/time";
 import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
+import { EmptyState } from "@/components/shell/EmptyState";
+import { networkErrorMessage } from "@/lib/network";
 
 const TYPE_FILTERS: Array<"全部" | CalendarEventType> = [
   "全部",
@@ -23,6 +25,7 @@ export function CalendarPanel() {
   const [degraded, setDegraded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [retryTick, setRetryTick] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -44,11 +47,11 @@ export function CalendarPanel() {
       })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setError("日历加载失败。稍后重试。");
+        setError(networkErrorMessage("日历加载失败。稍后重试。"));
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [days]);
+  }, [days, retryTick]);
 
   const filtered = useMemo(
     () => (type === "全部" ? events : events.filter((e) => e.type === type)),
@@ -119,14 +122,19 @@ export function CalendarPanel() {
         <p className="py-10 text-center text-sm text-mute">加载中...</p>
       ) : null}
       {error ? (
-        <p className="py-10 text-center text-sm text-short" role="alert">
-          {error}
-        </p>
+        <EmptyState
+          title={error}
+          detail="恢复网络后点重试，或改时间范围。"
+          actionLabel="重试"
+          onAction={() => setRetryTick((n) => n + 1)}
+          tone="short"
+        />
       ) : null}
       {!loading && !error && groups.length === 0 ? (
-        <p className="py-10 text-center text-sm text-mute">
-          该筛选下无事件。
-        </p>
+        <EmptyState
+          title="该筛选下无事件"
+          detail="换类型或改成 30 天看看。"
+        />
       ) : null}
 
       <div className="space-y-5">
