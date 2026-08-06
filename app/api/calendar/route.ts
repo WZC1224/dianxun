@@ -7,11 +7,15 @@ export async function GET(req: NextRequest) {
     const raw = req.nextUrl.searchParams.get("days") ?? "7";
     const days = raw === "30" ? 30 : 7;
     const { events, source } = await resolveCalendar(days);
+    const meta = dataSourceMeta(source);
     return NextResponse.json(
-      { days, events, ...dataSourceMeta(source) },
+      { days, events, ...meta },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+          // Degraded responses must not stick on CDN as "live".
+          "Cache-Control": meta.degraded
+            ? "private, no-store"
+            : "public, s-maxage=300, stale-while-revalidate=600",
         },
       },
     );

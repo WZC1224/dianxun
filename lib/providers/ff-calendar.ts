@@ -83,9 +83,21 @@ export function filterCalendarHorizon(
   });
 }
 
-type FfCache = { at: number; events: CalendarEvent[]; url: string };
+type FfCache = {
+  at: number;
+  events: CalendarEvent[];
+  url: string;
+  failUntil?: number;
+};
 let ffCache: FfCache | null = null;
 const FF_TTL_MS = 15 * 60_000;
+/** After FF network/HTTP failure, skip outbound fetch for this window. */
+export const FF_FAIL_COOLDOWN_MS = 60_000;
+
+/** Test-only: clear module cache between cases. */
+export function resetFfCacheForTests(): void {
+  ffCache = null;
+}
 
 function ensureBootstrapCache(feedUrl: string): CalendarEvent[] {
   if (ffCache && ffCache.url === feedUrl) return ffCache.events;
@@ -100,9 +112,18 @@ export async function fetchFfCalendar(
     process.env.CALENDAR_FF_URL?.trim() || DEFAULT_FF_CALENDAR_URL,
 ): Promise<{ events: CalendarEvent[]; fresh: boolean }> {
   const cached = ensureBootstrapCache(feedUrl);
-  if (ffCache && Date.now() - ffCache.at < FF_TTL_MS && ffCache.at > 0) {
+  const now = Date.now();
+
+  if (ffCache?.failUntil && now < ffCache.failUntil) {
     return {
-      events: filterCalendarHorizon(cached, days),
+      events: filterCalendarHorizon(ffCache.events, days, now),
+      fresh: false,
+    };
+  }
+
+  if (ffCache && now - ffCache.at < FF_TTL_MS && ffCache.at > 0) {
+    return {
+      events: filterCalendarHorizon(cached, days, now),
       fresh: true,
     };
   }
@@ -128,8 +149,14 @@ export async function fetchFfCalendar(
       fresh: true,
     };
   } catch (err) {
-    // Stale / bootstrap beats empty calendar when FF rate-limits (common).
-    console.warn("[calendar] FF fetch failed, using cached week", err);
+    // Bootstrap / last-good beats empty calendar when FF rate-limits (common).
+    console.warn("[calendar] FF fetch failed, using cached or bootstrap", err);
+    ffCache = {
+      at: ffCache?.at ?? 0,
+      events: cached,
+      url: feedUrl,
+      failUntil: Date.now() + FF_FAIL_COOLDOWN_MS,
+    };
     return {
       events: filterCalendarHorizon(cached, days),
       fresh: false,

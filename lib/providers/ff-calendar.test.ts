@@ -4,10 +4,13 @@ import {
   fetchFfCalendar,
   filterCalendarHorizon,
   parseFfCalendar,
+  resetFfCacheForTests,
 } from "@/lib/providers/ff-calendar";
 
 describe("ff-calendar", () => {
   afterEach(() => {
+    resetFfCacheForTests();
+    vi.useRealTimers();
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
@@ -71,5 +74,23 @@ describe("ff-calendar", () => {
     const { events, fresh } = await fetchFfCalendar(7);
     expect(fresh).toBe(false);
     expect(events.length).toBeGreaterThan(0);
+  });
+
+  it("skips FF fetch during fail cooldown", async () => {
+    vi.useFakeTimers({ now: 1_700_000_000_000 });
+    const fetchMock = vi.fn(async () => {
+      throw new Error("network down");
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchFfCalendar(7);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await fetchFfCalendar(7);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(60_001);
+    await fetchFfCalendar(7);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

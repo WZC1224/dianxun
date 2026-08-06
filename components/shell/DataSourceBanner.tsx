@@ -9,7 +9,7 @@ export function DataSourceBanner({ dataSource, degraded }: Props) {
   if (!dataSource || dataSource === "live") return null;
 
   const text = degraded
-    ? "实时源暂不可用，已降级为演示数据。勿作交易依据。"
+    ? "实时源暂不可用，已用缓存或备用数据。勿作交易依据。"
     : "演示数据 · 非实时行情。勿作交易依据。";
 
   return (
