@@ -38,7 +38,12 @@ export async function GET(req: NextRequest) {
       }),
     );
     const anyMock = resolved.some((r) => r.source === "mock");
-    const items = resolved.map(({ source: _s, ...rest }) => rest);
+    const items = resolved.map((r) => ({
+      symbol: r.symbol,
+      entryHint: r.entryHint,
+      last: r.last,
+      bias: r.bias,
+    }));
     return NextResponse.json(
       { items, ...dataSourceMeta(anyMock ? "mock" : "live") },
       {

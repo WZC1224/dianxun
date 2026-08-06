@@ -25,6 +25,18 @@ export const metadata: Metadata = {
   description: "加密快讯与交易参考点位",
   applicationName: "点讯",
   manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "点讯",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {

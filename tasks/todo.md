@@ -96,9 +96,9 @@
 **Description:** manifest、图标占位、Playwright 四 Tab 导航 smoke。
 
 **Acceptance criteria:**
-- [ ] 可「添加到主屏幕」基本可用
-- [ ] e2e 绿
-- [ ] `npm run build` 绿
+- [x] 可「添加到主屏幕」基本可用
+- [x] e2e 绿
+- [x] `npm run build` 绿
 
 **Verification:** `npm run build && npm run test && npm run test:e2e`  
 **Dependencies:** Checkpoint C  

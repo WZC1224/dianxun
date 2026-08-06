@@ -15,6 +15,7 @@ http://localhost:3000
 
 ```bash
 npm run test
+npm run test:e2e
 npm run lint
 npm run build
 npm start
