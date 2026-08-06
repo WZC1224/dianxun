@@ -1,11 +1,14 @@
-import { MockNewsProvider } from "@/lib/providers/mock-news";
+import { getDataMode } from "@/lib/providers/data-mode";
+import { resolveNewsProvider } from "@/lib/providers/resolve";
 import type { NewsProvider } from "@/lib/providers/news-types";
 
-export function getDataMode(): "mock" | "live" {
-  return process.env.DATA_MODE === "live" ? "live" : "mock";
-}
+export { getDataMode } from "@/lib/providers/data-mode";
+export { resolveOhlc } from "@/lib/providers/resolve";
 
 export function getNewsProvider(): NewsProvider {
-  // live adapter placeholder: fall back to mock until wired
-  return new MockNewsProvider();
+  return resolveNewsProvider();
+}
+
+export function isLiveMode(): boolean {
+  return getDataMode() === "live";
 }

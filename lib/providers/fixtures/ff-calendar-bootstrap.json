@@ -1,0 +1,66 @@
+[
+  {
+    "title": "OPEC-JMMC Meetings",
+    "country": "All",
+    "date": "2026-08-04T09:15:00-04:00",
+    "impact": "Medium",
+    "forecast": "",
+    "previous": ""
+  },
+  {
+    "title": "ISM Services PMI",
+    "country": "USD",
+    "date": "2026-08-05T10:00:00-04:00",
+    "impact": "High",
+    "forecast": "51.2",
+    "previous": "50.8"
+  },
+  {
+    "title": "FOMC Member Speaks",
+    "country": "USD",
+    "date": "2026-08-06T14:00:00-04:00",
+    "impact": "Medium",
+    "forecast": "",
+    "previous": ""
+  },
+  {
+    "title": "Initial Jobless Claims",
+    "country": "USD",
+    "date": "2026-08-07T08:30:00-04:00",
+    "impact": "High",
+    "forecast": "225K",
+    "previous": "218K"
+  },
+  {
+    "title": "Core PPI m/m",
+    "country": "USD",
+    "date": "2026-08-08T08:30:00-04:00",
+    "impact": "High",
+    "forecast": "0.2%",
+    "previous": "0.1%"
+  },
+  {
+    "title": "University of Michigan Sentiment",
+    "country": "USD",
+    "date": "2026-08-08T10:00:00-04:00",
+    "impact": "Medium",
+    "forecast": "62.0",
+    "previous": "61.7"
+  },
+  {
+    "title": "ECB President Speaks",
+    "country": "EUR",
+    "date": "2026-08-09T05:00:00-04:00",
+    "impact": "High",
+    "forecast": "",
+    "previous": ""
+  },
+  {
+    "title": "China CPI y/y",
+    "country": "CNY",
+    "date": "2026-08-10T21:30:00-04:00",
+    "impact": "High",
+    "forecast": "0.3%",
+    "previous": "0.1%"
+  }
+]

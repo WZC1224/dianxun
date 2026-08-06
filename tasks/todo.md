@@ -83,8 +83,9 @@
 **Description:** `.env.example`；至少一个真实新闻或行情 adapter 可开关；失败回 mock。
 
 **Acceptance criteria:**
-- [ ] 无密钥入库
-- [ ] `DATA_MODE=mock|live` 可切
+- [x] 无密钥入库
+- [x] `DATA_MODE=mock|live` 可切
+- [x] Binance OHLC + RSS 快讯；失败回 mock
 
 **Verification:** mock/live 各跑一轮  
 **Dependencies:** Tasks 2–5  

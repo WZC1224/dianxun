@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { computeLevels } from "@/lib/levels/engine";
-import { LEVEL_SYMBOLS, mockOhlc } from "@/lib/providers/mock-market";
+import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
+import { resolveOhlc } from "@/lib/providers/resolve";
 
 export async function GET(
   _req: Request,
@@ -12,9 +13,19 @@ export async function GET(
     return NextResponse.json({ error: "不支持的币种" }, { status: 404 });
   }
   try {
-    const bars = mockOhlc(symbol);
+    const { bars, source } = await resolveOhlc(symbol);
     const levels = computeLevels(symbol, bars);
-    return NextResponse.json(levels);
+    if (source === "live") {
+      levels.method = `${levels.method} · Binance 4h`;
+    }
+    return NextResponse.json(
+      { ...levels, dataSource: source },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        },
+      },
+    );
   } catch {
     return NextResponse.json({ error: "点位计算失败" }, { status: 500 });
   }
