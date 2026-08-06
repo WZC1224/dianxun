@@ -11,6 +11,7 @@
 ## Commands
 
 - Dev: `npm run dev` → http://localhost:3000
+- Dev 卡死/500/EPERM：`npm run dev:fresh`（杀占口进程 + 清 `.next/trace` 再起）
 - Test: `npm run test` · `npm run test:e2e` · `npm run build` · `npm run lint`
 - Icons: `npm run icons`（从 `public/icon.svg` 栅格）
 
@@ -55,3 +56,4 @@
 - FF 易 429 → 内存缓存 + bootstrap JSON
 - Cursor 浏览器注入 `data-cursor-ref` 可触发假 hydration「1 Issue」
 - Playwright 浏览器 CDN 可能不通 → config 用本机 Chrome
+- Windows：勿开两份 `next dev`。旧进程占 3000 会 500；第二份改 3001 常 `EPERM` 写 `.next/trace`。用 `npm run dev:fresh`
