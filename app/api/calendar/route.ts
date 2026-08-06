@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { dataSourceMeta } from "@/lib/providers/data-source-meta";
 import { resolveCalendar } from "@/lib/providers/resolve";
 
 export async function GET(req: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest) {
     const days = raw === "30" ? 30 : 7;
     const { events, source } = await resolveCalendar(days);
     return NextResponse.json(
-      { days, events, dataSource: source },
+      { days, events, ...dataSourceMeta(source) },
       {
         headers: {
           "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",

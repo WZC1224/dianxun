@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getNewsProvider } from "@/lib/providers";
+import { dataSourceMeta } from "@/lib/providers/data-source-meta";
+import { resolveNewsFlash } from "@/lib/providers/resolve";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,8 +12,15 @@ export async function GET(req: NextRequest) {
     if (cursor !== undefined && !/^\d+$/.test(cursor)) {
       return NextResponse.json({ error: "无效游标" }, { status: 400 });
     }
-    const data = await getNewsProvider().listFlash({ limit, cursor });
-    return NextResponse.json(data);
+    const { items, nextCursor, source } = await resolveNewsFlash({
+      limit,
+      cursor,
+    });
+    return NextResponse.json({
+      items,
+      nextCursor,
+      ...dataSourceMeta(source),
+    });
   } catch {
     return NextResponse.json(
       { error: "快讯暂时不可用，请稍后重试" },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { computeLevels } from "@/lib/levels/engine";
+import { dataSourceMeta } from "@/lib/providers/data-source-meta";
 import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
 import { resolveOhlc } from "@/lib/providers/resolve";
 
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
       5,
     );
 
-    const items = await Promise.all(
+    const resolved = await Promise.all(
       symbols.map(async (symbol) => {
         const { bars, source } = await resolveOhlc(symbol);
         const levels = computeLevels(symbol, bars);
@@ -32,12 +33,14 @@ export async function GET(req: NextRequest) {
               : `近阻力 ${levels.entryHigh}`,
           last: bars.at(-1)?.close ?? 0,
           bias: levels.sideBias,
-          dataSource: source,
+          source,
         };
       }),
     );
+    const anyMock = resolved.some((r) => r.source === "mock");
+    const items = resolved.map(({ source: _s, ...rest }) => rest);
     return NextResponse.json(
-      { items },
+      { items, ...dataSourceMeta(anyMock ? "mock" : "live") },
       {
         headers: {
           "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",

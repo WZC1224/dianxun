@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { LevelSnapshot } from "@/lib/types";
 import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
+import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
 import {
   readWatchlist,
@@ -14,6 +15,8 @@ export function LevelsPanel() {
   const [watchlist, setWatchlist] = useState<LevelSymbol[]>(DEFAULT_WATCH);
   const [symbol, setSymbol] = useState<LevelSymbol>("BTC");
   const [data, setData] = useState<LevelSnapshot | null>(null);
+  const [dataSource, setDataSource] = useState<"live" | "mock" | undefined>();
+  const [degraded, setDegraded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,10 +32,17 @@ export function LevelsPanel() {
     void fetch(`/api/levels/${symbol}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error("fail");
-        return res.json() as Promise<LevelSnapshot>;
+        return res.json() as Promise<
+          LevelSnapshot & {
+            dataSource?: "live" | "mock";
+            degraded?: boolean;
+          }
+        >;
       })
       .then((d) => {
         setData(d);
+        setDataSource(d.dataSource);
+        setDegraded(Boolean(d.degraded));
         setLoading(false);
       })
       .catch((err: unknown) => {
@@ -95,6 +105,8 @@ export function LevelsPanel() {
           </button>
         </div>
       </div>
+
+      <DataSourceBanner dataSource={dataSource} degraded={degraded} />
 
       {loading ? (
         <p className="py-10 text-center text-sm text-mute">计算中...</p>

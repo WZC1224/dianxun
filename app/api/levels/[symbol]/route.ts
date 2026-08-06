@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { computeLevels } from "@/lib/levels/engine";
+import { dataSourceMeta } from "@/lib/providers/data-source-meta";
 import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
 import { resolveOhlc } from "@/lib/providers/resolve";
 
@@ -19,7 +20,7 @@ export async function GET(
       levels.method = `${levels.method} · Binance 4h`;
     }
     return NextResponse.json(
-      { ...levels, dataSource: source },
+      { ...levels, ...dataSourceMeta(source) },
       {
         headers: {
           "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { NewsItem } from "@/lib/types";
 import { formatClock, formatRelativeTime } from "@/lib/time";
+import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
 import { readWatchlist } from "@/lib/watchlist";
 
@@ -13,10 +14,17 @@ type TapeItem = {
   bias: "long" | "short" | "neutral";
 };
 
+type SourceState = {
+  dataSource?: "live" | "mock";
+  degraded?: boolean;
+};
+
 export function FlashHome() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [cursor, setCursor] = useState<string | undefined>();
   const [tape, setTape] = useState<TapeItem[]>([]);
+  const [newsSource, setNewsSource] = useState<SourceState>({});
+  const [tapeSource, setTapeSource] = useState<SourceState>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,9 +38,17 @@ export function FlashHome() {
       const data = (await res.json()) as {
         items: NewsItem[];
         nextCursor?: string;
+        dataSource?: "live" | "mock";
+        degraded?: boolean;
       };
       setItems((prev) => (append ? [...prev, ...data.items] : data.items));
       setCursor(data.nextCursor);
+      if (!append) {
+        setNewsSource({
+          dataSource: data.dataSource,
+          degraded: data.degraded,
+        });
+      }
     } catch {
       setError("快讯加载失败。检查网络后重试。");
     } finally {
@@ -45,7 +61,19 @@ export function FlashHome() {
     const qs = new URLSearchParams({ symbols: watch.join(",") });
     void fetch(`/api/levels/tape?${qs}`)
       .then((r) => r.json())
-      .then((d: { items?: TapeItem[] }) => setTape(d.items ?? []))
+      .then(
+        (d: {
+          items?: TapeItem[];
+          dataSource?: "live" | "mock";
+          degraded?: boolean;
+        }) => {
+          setTape(d.items ?? []);
+          setTapeSource({
+            dataSource: d.dataSource,
+            degraded: d.degraded,
+          });
+        },
+      )
       .catch(() => setTape([]));
   }, []);
 
@@ -114,6 +142,14 @@ export function FlashHome() {
       </section>
 
       <section aria-label="快讯" className="flex-1 py-3">
+        <DataSourceBanner
+          dataSource={
+            newsSource.dataSource === "mock" || tapeSource.dataSource === "mock"
+              ? "mock"
+              : newsSource.dataSource ?? tapeSource.dataSource
+          }
+          degraded={Boolean(newsSource.degraded || tapeSource.degraded)}
+        />
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-ink">最新动态</h2>
           <button

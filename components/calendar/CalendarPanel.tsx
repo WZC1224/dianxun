@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CalendarEvent, CalendarEventType } from "@/lib/types";
 import { formatClock, formatDayLabel } from "@/lib/time";
+import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
 
 const TYPE_FILTERS: Array<"全部" | CalendarEventType> = [
@@ -18,6 +19,8 @@ export function CalendarPanel() {
   const [days, setDays] = useState<7 | 30>(7);
   const [type, setType] = useState<(typeof TYPE_FILTERS)[number]>("全部");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [dataSource, setDataSource] = useState<"live" | "mock" | undefined>();
+  const [degraded, setDegraded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,9 +31,17 @@ export function CalendarPanel() {
     void fetch(`/api/calendar?days=${days}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error("fail");
-        return res.json() as Promise<{ events: CalendarEvent[] }>;
+        return res.json() as Promise<{
+          events: CalendarEvent[];
+          dataSource?: "live" | "mock";
+          degraded?: boolean;
+        }>;
       })
-      .then((d) => setEvents(d.events))
+      .then((d) => {
+        setEvents(d.events);
+        setDataSource(d.dataSource);
+        setDegraded(Boolean(d.degraded));
+      })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
         setError("日历加载失败。稍后重试。");
@@ -101,6 +112,8 @@ export function CalendarPanel() {
           })}
         </div>
       </div>
+
+      <DataSourceBanner dataSource={dataSource} degraded={degraded} />
 
       {loading ? (
         <p className="py-10 text-center text-sm text-mute">加载中...</p>

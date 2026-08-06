@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import type { FundingSummary, LongShortRow } from "@/lib/types";
+import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
 
 export function LongShortPanel() {
   const [rows, setRows] = useState<LongShortRow[]>([]);
   const [funding, setFunding] = useState<FundingSummary | null>(null);
+  const [dataSource, setDataSource] = useState<"live" | "mock" | undefined>();
+  const [degraded, setDegraded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,11 +20,15 @@ export function LongShortPanel() {
         return res.json() as Promise<{
           rows: LongShortRow[];
           funding: FundingSummary;
+          dataSource?: "live" | "mock";
+          degraded?: boolean;
         }>;
       })
       .then((d) => {
         setRows(d.rows);
         setFunding(d.funding);
+        setDataSource(d.dataSource);
+        setDegraded(Boolean(d.degraded));
       })
       .catch(() => setError("多空比加载失败。数据源暂不可用。"))
       .finally(() => setLoading(false));
@@ -30,6 +37,7 @@ export function LongShortPanel() {
   return (
     <div className="space-y-4 pb-4 pt-3">
       <p className="text-sm text-mute">多空持仓人数比例</p>
+      <DataSourceBanner dataSource={dataSource} degraded={degraded} />
 
       {loading ? (
         <p className="py-10 text-center text-sm text-mute">加载中...</p>

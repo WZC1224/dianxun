@@ -20,6 +20,7 @@ import type {
   CalendarEvent,
   FundingSummary,
   LongShortRow,
+  NewsItem,
   OhlcBar,
 } from "@/lib/types";
 
@@ -40,24 +41,48 @@ export async function resolveOhlc(
 }
 
 export function resolveNewsProvider(): NewsProvider {
-  if (getDataMode() !== "live") {
-    return new MockNewsProvider();
-  }
   return {
     async listFlash(params) {
-      try {
-        return await new WscnNewsProvider().listFlash(params);
-      } catch (wscnErr) {
-        console.error("[news] WSCN failed, trying RSS", wscnErr);
-        try {
-          return await new RssNewsProvider().listFlash(params);
-        } catch (rssErr) {
-          console.error("[news] RSS failed, falling back to mock", rssErr);
-          return new MockNewsProvider().listFlash(params);
-        }
-      }
+      const { items, nextCursor } = await resolveNewsFlash(params);
+      return { items, nextCursor };
     },
   };
+}
+
+export async function resolveNewsFlash(params: {
+  limit: number;
+  cursor?: string;
+}): Promise<{
+  items: NewsItem[];
+  nextCursor?: string;
+  source: "live" | "mock";
+}> {
+  if (getDataMode() !== "live") {
+    return {
+      ...(await new MockNewsProvider().listFlash(params)),
+      source: "mock",
+    };
+  }
+  try {
+    return {
+      ...(await new WscnNewsProvider().listFlash(params)),
+      source: "live",
+    };
+  } catch (wscnErr) {
+    console.error("[news] WSCN failed, trying RSS", wscnErr);
+    try {
+      return {
+        ...(await new RssNewsProvider().listFlash(params)),
+        source: "live",
+      };
+    } catch (rssErr) {
+      console.error("[news] RSS failed, falling back to mock", rssErr);
+      return {
+        ...(await new MockNewsProvider().listFlash(params)),
+        source: "mock",
+      };
+    }
+  }
 }
 
 export async function resolveLongShort(): Promise<{

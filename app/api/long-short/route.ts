@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { dataSourceMeta } from "@/lib/providers/data-source-meta";
 import { resolveLongShort } from "@/lib/providers/resolve";
 
 export async function GET() {
@@ -8,7 +9,7 @@ export async function GET() {
       {
         rows: data.rows,
         funding: data.funding,
-        dataSource: data.source,
+        ...dataSourceMeta(data.source),
       },
       {
         headers: {
