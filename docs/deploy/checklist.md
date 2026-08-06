@@ -22,28 +22,29 @@
 | 项 | 状态 |
 |----|------|
 | 代码质量门（本地） | **GO** |
-| CI 文件已就绪 | **GO**（需 push 后 Actions 实跑） |
-| 生产主机 / Vercel | **NO-GO**（产品暂缓） |
-| 域名 HTTPS | **NO-GO**（随部署） |
+| CI 文件已就绪 | **GO** |
+| 生产主机 / Vercel | **GO** — https://dianxun.vercel.app （`DATA_MODE=mock`） |
+| 域名 HTTPS | **GO**（`*.vercel.app` 默认证） |
 | 外部错误监控（Sentry 等） | **NO-GO**（可选；日志先行） |
 
-**结论：** 可推 GitHub 当「源码发布」；**不可**对公网用户宣称生产上线，直到 Vercel+域名勾完。
+**结论：** 公网预览已开（mock）。切 `DATA_MODE=live` 前再冒烟四 Tab + 日志。
 
 ## 部署
 
-- [ ] 推远端 `git push origin main`（网络通时）
-- [ ] 确认 Actions `CI` workflow 绿
+- [x] 推远端 `git push origin main`
+- [ ] 确认 Actions `CI` workflow 绿（本机无 `gh`；浏览器看 Actions）
 - [ ] GitHub → Settings → Branches：Require status checks（可选加固）
-- [ ] Vercel 项目联通（暂缓）
-- [ ] 生产环境变量：`DATA_MODE=live`（或先 mock 冒烟）
-- [ ] 生产域名 HTTPS（暂缓）
+- [x] Vercel 项目联通（`wzc1224s-projects/dianxun`，已连 GitHub）
+- [x] 生产环境变量：`DATA_MODE=mock`（要 live 时在 Vercel Env 改并 Redeploy）
+- [x] 生产域名 HTTPS：https://dianxun.vercel.app
 
 ## 上线后（Vercel 开通时）
 
-- [ ] 打开首屏验证四 Tab + Banner 降级文案
+- [x] 打开首屏验证四 Tab + Banner 降级文案（mock 见「演示数据」）
 - [ ] 搜主机日志：`provider_fallback` / `api_request`
 - [ ] 错误监控（可选；新 ADR 选厂商）
 - [ ] 回滚：Vercel → 上一部署；或 `git revert` + 再部署
+- [ ] 切 live：`vercel env` 改 `DATA_MODE=live` → Redeploy → 再冒烟
 
 ## 回滚（当前无生产时）
 
