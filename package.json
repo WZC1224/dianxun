@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "icons": "node scripts/render-icons.cjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15.5.7",
+    "sharp": "^0.34.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "2.1.9"
