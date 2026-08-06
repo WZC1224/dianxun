@@ -1,0 +1,15 @@
+---
+description: 点讯 DianXun 项目约定 — 栈、边界、数据模式
+alwaysApply: true
+---
+
+# 点讯 agent 规则
+
+读根目录 `AGENTS.md` 作完整地图。摘要：
+
+- 栈：Next.js 15 App Router / TS / Tailwind v4 / Vitest / Playwright
+- 数据：`DATA_MODE=mock|live`；降级经 `lib/providers/resolve*`；UI 明示 `dataSource`/`degraded`
+- 测：新行为先写测；`npm run test` 门禁
+- 禁：提交 secrets、擅自部署 Vercel、提交 `.cursor/skills` 垃圾、做交易下单
+- UI：系统主题；中文文案；壳在 `components/shell/`
+- 架构决策：`docs/adrs/0001-mvp-architecture.md`

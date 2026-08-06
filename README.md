@@ -2,6 +2,8 @@
 
 加密快讯 + 交易参考点位 + 多空比 + 大事日历（Next.js PWA）。
 
+Agent / 协作者先读 [`AGENTS.md`](./AGENTS.md)（栈、地图、边界、坑）。
+
 ## 本地开发
 
 ```bash
