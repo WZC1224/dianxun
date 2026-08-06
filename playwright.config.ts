@@ -20,8 +20,8 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        // Prefer system Chrome when Playwright browser CDN blocked
-        channel: "chrome",
+        // Local: system Chrome (CDN often blocked). CI: bundled Chromium.
+        ...(process.env.CI ? {} : { channel: "chrome" as const }),
       },
     },
   ],

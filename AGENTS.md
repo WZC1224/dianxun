@@ -12,7 +12,8 @@
 
 - Dev: `npm run dev` → http://localhost:3000
 - Dev 卡死/500/EPERM：`npm run dev:fresh`（杀占口进程 + 清 `.next/trace` 再起）
-- Test: `npm run test` · `npm run test:e2e` · `npm run build` · `npm run lint`
+- Test: `npm run test` · `npm run test:e2e` · `npm run typecheck` · `npm run build` · `npm run lint`
+- CI：`.github/workflows/ci.yml`（push/PR → lint + typecheck + unit + build + e2e；`DATA_MODE=mock`；无 Vercel 部署）
 - Icons: `npm run icons`（从 `public/icon.svg` 栅格）
 
 ## Project Map
@@ -24,7 +25,8 @@
 | Providers | `lib/providers/` | `resolve*` 统一 mock/live/降级；测跟源文件旁 |
 | Levels algo | `lib/levels/engine.ts` | ATR(14) + 支撑阻力带 |
 | Watchlist | `lib/watchlist.ts` | `localStorage` |
-| Spec/ADR | `docs/specs/`, `docs/adrs/0001-mvp-architecture.md` | 改架构先看 ADR |
+| Spec/ADR | `docs/specs/`, `docs/adrs/` (0001–0003) | 改架构/CI/可观测性先看 ADR |
+| Observability | `lib/observability/` | 结构化 JSON 日志；`x-request-id`；无 APM |
 | Tasks | `tasks/todo.md` | MVP Checkpoint D 已勾；延期项在文件内 |
 
 ## Data mode

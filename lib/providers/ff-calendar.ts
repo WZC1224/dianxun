@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { CalendarEvent, CalendarEventType } from "@/lib/types";
 import { ProviderError } from "@/lib/types";
 import bootstrapJson from "@/lib/providers/fixtures/ff-calendar-bootstrap.json";
+import { errFields, log } from "@/lib/observability/log";
 
 export const DEFAULT_FF_CALENDAR_URL =
   "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
@@ -150,7 +151,12 @@ export async function fetchFfCalendar(
     };
   } catch (err) {
     // Bootstrap / last-good beats empty calendar when FF rate-limits (common).
-    console.warn("[calendar] FF fetch failed, using cached or bootstrap", err);
+    log("warn", "provider_fallback", {
+      domain: "calendar",
+      provider: "ff",
+      outcome: "cache_or_bootstrap",
+      ...errFields(err),
+    });
     ffCache = {
       at: ffCache?.at ?? 0,
       events: cached,

@@ -16,16 +16,23 @@ http://localhost:3000
 ## 命令
 
 ```bash
+npm run dev
+npm run dev:fresh   # Windows：清 3000 / .next/trace 锁后再起
 npm run test
 npm run test:e2e
+npm run typecheck
 npm run lint
 npm run build
 npm start
 ```
 
-## 部署（Vercel 推荐）
+CI：push/PR → `.github/workflows/ci.yml`（mock；无部署）。见 [ADR-0002](./docs/adrs/0002-ci-quality-gates.md)。
 
-1. 代码推 GitHub / GitLab
+## 部署（Vercel 推荐 · 暂缓）
+
+产品决策：**先不部署**。就绪后再：
+
+1. 代码推 GitHub
 2. Vercel → New Project → 选本仓库（Root 保持仓库根）
 3. Build Command 默认 `next build`；Output `.next`
 4. 环境变量（可选）：
@@ -53,7 +60,10 @@ Node ≥ 20.19（本地 20.12 可用但有引擎告警）。
 ## 文档
 
 - Spec: `docs/specs/2026-08-05-dianxun-spec.md`
+- ADR: `docs/adrs/`（[0001](./docs/adrs/0001-mvp-architecture.md) · [0002 CI](./docs/adrs/0002-ci-quality-gates.md) · [0003 可观测性](./docs/adrs/0003-observability-structured-logs.md)）
 - UI: `docs/design/dianxun-ui.md`
 - Preflight: `docs/design/preflight-coding.md`
 - Review: `docs/reviews/2026-08-05-mvp-review.md`
+- Deploy checklist: `docs/deploy/checklist.md`
 - Tasks: `tasks/todo.md`
+- Agents: [`AGENTS.md`](./AGENTS.md)

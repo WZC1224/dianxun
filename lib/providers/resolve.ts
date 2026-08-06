@@ -16,6 +16,7 @@ import { MockNewsProvider } from "@/lib/providers/mock-news";
 import type { NewsProvider } from "@/lib/providers/news-types";
 import { RssNewsProvider } from "@/lib/providers/rss-news";
 import { WscnNewsProvider } from "@/lib/providers/wscn-news";
+import { errFields, log } from "@/lib/observability/log";
 import type {
   CalendarEvent,
   FundingSummary,
@@ -35,7 +36,13 @@ export async function resolveOhlc(
     const bars = await new BinanceMarketProvider().getOhlc(symbol, count);
     return { bars, source: "live" };
   } catch (err) {
-    console.error("[market] live OHLC failed, falling back to mock", err);
+    log("error", "provider_fallback", {
+      domain: "market",
+      provider: "binance",
+      outcome: "mock",
+      symbol,
+      ...errFields(err),
+    });
     return { bars: mockOhlc(symbol, count), source: "mock" };
   }
 }
@@ -69,14 +76,24 @@ export async function resolveNewsFlash(params: {
       source: "live",
     };
   } catch (wscnErr) {
-    console.error("[news] WSCN failed, trying RSS", wscnErr);
+    log("warn", "provider_fallback", {
+      domain: "news",
+      provider: "wscn",
+      outcome: "try_rss",
+      ...errFields(wscnErr),
+    });
     try {
       return {
         ...(await new RssNewsProvider().listFlash(params)),
         source: "live",
       };
     } catch (rssErr) {
-      console.error("[news] RSS failed, falling back to mock", rssErr);
+      log("error", "provider_fallback", {
+        domain: "news",
+        provider: "rss",
+        outcome: "mock",
+        ...errFields(rssErr),
+      });
       return {
         ...(await new MockNewsProvider().listFlash(params)),
         source: "mock",
@@ -97,7 +114,12 @@ export async function resolveLongShort(): Promise<{
     const data = await fetchGateLongShort();
     return { ...data, source: "live" };
   } catch (err) {
-    console.error("[long-short] live Gate failed, falling back to mock", err);
+    log("error", "provider_fallback", {
+      domain: "long-short",
+      provider: "gate",
+      outcome: "mock",
+      ...errFields(err),
+    });
     return { ...(await mockLongShort()), source: "mock" };
   }
 }
@@ -122,7 +144,12 @@ export async function resolveCalendar(
     }
     return { events, source: fresh ? "live" : "mock" };
   } catch (err) {
-    console.error("[calendar] live FF failed, using crypto + mock", err);
+    log("error", "provider_fallback", {
+      domain: "calendar",
+      provider: "ff",
+      outcome: "mock_plus_crypto",
+      ...errFields(err),
+    });
     return {
       events: mergeCalendarEvents(await mockCalendar(days), crypto),
       source: "mock",

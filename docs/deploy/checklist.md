@@ -4,31 +4,56 @@
 
 ## Pre-launch
 
-- [x] `npm run lint` / `npm run test` / `npm run build` 绿
-- [x] `npm run test:e2e` 绿（系统 Chrome）
+- [x] `npm run lint` / `npm run typecheck` / `npm run test` / `npm run build` 绿
+- [x] `npm run test:e2e` 绿（本机系统 Chrome；CI 用 Chromium）
+- [x] GitHub Actions CI（lint/typecheck/unit/build/e2e，`DATA_MODE=mock`）
 - [x] 四 Tab 可访问（/ /levels /long-short /calendar）
 - [x] live adapters + 失败降级 UI
+- [x] 结构化日志：`provider_fallback` / `api_request` + `x-request-id`（ADR-0003）
 - [x] 无 secrets 入库（`.env.example` 仅占位）
 - [x] 安全响应头
 - [x] 免责声明全局 + 点位完整句
 - [x] PWA manifest + 品牌图标 + InstallPrompt
 - [x] 离线 Banner + 空态重试
+- [x] ADR：0001 架构 · 0002 CI · 0003 可观测性
+
+## Go / No-Go（2026-08-06）
+
+| 项 | 状态 |
+|----|------|
+| 代码质量门（本地） | **GO** |
+| CI 文件已就绪 | **GO**（需 push 后 Actions 实跑） |
+| 生产主机 / Vercel | **NO-GO**（产品暂缓） |
+| 域名 HTTPS | **NO-GO**（随部署） |
+| 外部错误监控（Sentry 等） | **NO-GO**（可选；日志先行） |
+
+**结论：** 可推 GitHub 当「源码发布」；**不可**对公网用户宣称生产上线，直到 Vercel+域名勾完。
 
 ## 部署
 
-- [ ] 推远端（`main` 本地曾 ahead；GitHub 网络通后再 `git push`）
+- [ ] 推远端 `git push origin main`（网络通时）
+- [ ] 确认 Actions `CI` workflow 绿
+- [ ] GitHub → Settings → Branches：Require status checks（可选加固）
 - [ ] Vercel 项目联通（暂缓）
+- [ ] 生产环境变量：`DATA_MODE=live`（或先 mock 冒烟）
 - [ ] 生产域名 HTTPS（暂缓）
 
-## 上线后
+## 上线后（Vercel 开通时）
 
-- [ ] 打开首屏验证四 Tab
-- [ ] 错误监控（可选）
-- [ ] 回滚：Vercel 回上一部署
+- [ ] 打开首屏验证四 Tab + Banner 降级文案
+- [ ] 搜主机日志：`provider_fallback` / `api_request`
+- [ ] 错误监控（可选；新 ADR 选厂商）
+- [ ] 回滚：Vercel → 上一部署；或 `git revert` + 再部署
+
+## 回滚（当前无生产时）
+
+1. 代码：`git revert <sha>` 或重置未推提交（未 push 才可硬回）
+2. 已 push：revert commit → push →（若有）Vercel 自动跟
+3. 数据：无 DB；自选仅 `localStorage`，无需迁移回滚
 
 ## 已知非阻塞 / 延期
 
 - 解锁/上币仍为相对日程模板，非交易所真 API
-- FF 日历易 429 → 缓存/bootstrap
-- `npm audit` 仍有依赖告警
-- 无独立错误监控
+- FF 日历易 429 → 缓存/bootstrap + 冷却
+- `npm audit` 仍有依赖告警（CI `continue-on-error`）
+- 无独立错误监控 / 无生产流量告警

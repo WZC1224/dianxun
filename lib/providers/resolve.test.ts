@@ -34,23 +34,23 @@ describe("resolveOhlc", () => {
 
   it("returns live bars when Binance responds", async () => {
     vi.stubEnv("DATA_MODE", "live");
-    const row = [
-      1_700_000_000_000,
+    const openTime = 1_700_000_000_000;
+    const rowTail = [
       "100",
       "110",
       "90",
       "105",
       "1",
       1_700_014_400_000,
-    ];
+    ] as const;
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
         ok: true,
         json: async () =>
           Array.from({ length: 20 }, (_, i) => [
-            row[0] + i * 1000,
-            ...row.slice(1),
+            openTime + i * 1000,
+            ...rowTail,
           ]),
       })),
     );

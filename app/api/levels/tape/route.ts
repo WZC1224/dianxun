@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { computeLevels } from "@/lib/levels/engine";
+import { beginApiRequest } from "@/lib/observability/request";
 import { dataSourceMeta } from "@/lib/providers/data-source-meta";
 import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
 import { resolveOhlc } from "@/lib/providers/resolve";
 
 export async function GET(req: NextRequest) {
+  const api = beginApiRequest(req);
   try {
     const raw = req.nextUrl.searchParams.get("symbols");
     const requested = raw
@@ -44,15 +46,27 @@ export async function GET(req: NextRequest) {
       last: r.last,
       bias: r.bias,
     }));
+    const meta = dataSourceMeta(anyMock ? "mock" : "live");
+    api.finish({
+      route: "/api/levels/tape",
+      status: 200,
+      source: meta.dataSource,
+      degraded: meta.degraded,
+    });
     return NextResponse.json(
-      { items, ...dataSourceMeta(anyMock ? "mock" : "live") },
+      { items, ...meta },
       {
         headers: {
+          ...api.headers,
           "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
         },
       },
     );
   } catch {
-    return NextResponse.json({ error: "点位条不可用" }, { status: 502 });
+    api.finish({ route: "/api/levels/tape", status: 502 });
+    return NextResponse.json(
+      { error: "点位条不可用" },
+      { status: 502, headers: api.headers },
+    );
   }
 }
