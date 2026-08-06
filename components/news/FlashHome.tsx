@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { NewsItem } from "@/lib/types";
 import { formatClock, formatRelativeTime } from "@/lib/time";
 import { Disclaimer } from "@/components/shell/Disclaimer";
+import { readWatchlist } from "@/lib/watchlist";
 
 type TapeItem = {
   symbol: string;
@@ -39,18 +40,27 @@ export function FlashHome() {
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-    void fetch("/api/levels/tape")
+  const loadTape = useCallback(() => {
+    const watch = readWatchlist().slice(0, 3);
+    const qs = new URLSearchParams({ symbols: watch.join(",") });
+    void fetch(`/api/levels/tape?${qs}`)
       .then((r) => r.json())
       .then((d: { items?: TapeItem[] }) => setTape(d.items ?? []))
       .catch(() => setTape([]));
-  }, [load]);
+  }, []);
+
+  useEffect(() => {
+    void load();
+    loadTape();
+    const onFocus = () => loadTape();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [load, loadTape]);
 
   return (
     <div className="flex min-h-full flex-col">
       <section
-        aria-label="主流币点位胶带"
+        aria-label="自选点位胶带"
         className="sticky top-0 z-10 -mx-3.5 border-b border-rule bg-board px-3.5 py-2.5"
       >
         <div className="panel px-3 py-2.5">
@@ -60,7 +70,7 @@ export function FlashHome() {
                 className="live-dot inline-block h-2 w-2 rounded-full bg-live"
                 aria-label="实时"
               />
-              <span className="font-data text-[9px] text-mute">实时</span>
+              <span className="font-data text-[9px] text-mute">自选</span>
             </div>
             <div className="grid min-w-0 flex-1 grid-cols-3 gap-3">
               {tape.length === 0
@@ -144,9 +154,20 @@ export function FlashHome() {
                   {formatClock(item.publishedAt)}
                 </time>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] leading-snug text-ink">
-                    {item.title}
-                  </p>
+                  {item.url ? (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[15px] leading-snug text-ink hover:text-live"
+                    >
+                      {item.title}
+                    </a>
+                  ) : (
+                    <p className="text-[15px] leading-snug text-ink">
+                      {item.title}
+                    </p>
+                  )}
                   <p className="mt-1.5 text-[11px] text-mute">
                     {item.source} · {formatRelativeTime(item.publishedAt)}
                   </p>

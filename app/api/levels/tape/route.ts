@@ -1,11 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { computeLevels } from "@/lib/levels/engine";
 import { LEVEL_SYMBOLS } from "@/lib/providers/mock-market";
 import { resolveOhlc } from "@/lib/providers/resolve";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const symbols = LEVEL_SYMBOLS.slice(0, 3);
+    const raw = req.nextUrl.searchParams.get("symbols");
+    const requested = raw
+      ? raw
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter((s): s is (typeof LEVEL_SYMBOLS)[number] =>
+            (LEVEL_SYMBOLS as readonly string[]).includes(s),
+          )
+      : [];
+    const unique = [...new Set(requested)];
+    const symbols = (unique.length ? unique : LEVEL_SYMBOLS.slice(0, 3)).slice(
+      0,
+      5,
+    );
+
     const items = await Promise.all(
       symbols.map(async (symbol) => {
         const { bars, source } = await resolveOhlc(symbol);

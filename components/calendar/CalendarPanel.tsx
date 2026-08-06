@@ -1,58 +1,101 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { CalendarEvent } from "@/lib/types";
+import type { CalendarEvent, CalendarEventType } from "@/lib/types";
 import { formatClock, formatDayLabel } from "@/lib/time";
 import { Disclaimer } from "@/components/shell/Disclaimer";
 
+const TYPE_FILTERS: Array<"全部" | CalendarEventType> = [
+  "全部",
+  "宏观",
+  "解锁",
+  "上币",
+  "会议",
+  "其他",
+];
+
 export function CalendarPanel() {
   const [days, setDays] = useState<7 | 30>(7);
+  const [type, setType] = useState<(typeof TYPE_FILTERS)[number]>("全部");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    void fetch(`/api/calendar?days=${days}`)
+    void fetch(`/api/calendar?days=${days}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error("fail");
         return res.json() as Promise<{ events: CalendarEvent[] }>;
       })
       .then((d) => setEvents(d.events))
-      .catch(() => setError("日历加载失败。稍后重试。"))
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setError("日历加载失败。稍后重试。");
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [days]);
+
+  const filtered = useMemo(
+    () => (type === "全部" ? events : events.filter((e) => e.type === type)),
+    [events, type],
+  );
 
   const groups = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
-    for (const e of events) {
+    for (const e of filtered) {
       const key = formatDayLabel(e.startsAt);
       const list = map.get(key) ?? [];
       list.push(e);
       map.set(key, list);
     }
     return [...map.entries()];
-  }, [events]);
+  }, [filtered]);
 
   return (
     <div className="pb-4">
-      <div className="sticky top-0 z-10 -mx-3.5 mb-4 border-b border-rule bg-board px-3.5 pt-3">
-        <div className="flex gap-1">
+      <div className="sticky top-0 z-10 -mx-3.5 mb-4 border-b border-rule bg-board px-3.5 pt-2">
+        <div className="flex w-full" role="tablist" aria-label="时间范围">
           {([7, 30] as const).map((d) => {
             const active = days === d;
             return (
               <button
                 key={d}
                 type="button"
-                className={`-mb-px px-3 pb-2.5 text-sm transition-colors ${
+                className={`-mb-px min-w-0 flex-1 border-b-2 py-2.5 text-center text-sm transition-colors ${
                   active
-                    ? "border-b-2 border-live font-semibold text-live"
-                    : "text-mute hover:text-ink"
+                    ? "border-live font-semibold text-live"
+                    : "border-transparent text-mute hover:text-ink"
                 }`}
                 onClick={() => setDays(d)}
               >
                 {d}天
+              </button>
+            );
+          })}
+        </div>
+        <div
+          className="flex w-full gap-0.5 py-2"
+          role="group"
+          aria-label="事件类型"
+        >
+          {TYPE_FILTERS.map((t) => {
+            const active = type === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                className={`min-w-0 flex-1 truncate rounded-[length:var(--radius)] px-0.5 py-1.5 text-center text-[11px] transition-colors ${
+                  active
+                    ? "bg-slip font-medium text-live"
+                    : "text-mute hover:text-ink"
+                }`}
+                onClick={() => setType(t)}
+              >
+                {t}
               </button>
             );
           })}
@@ -69,7 +112,7 @@ export function CalendarPanel() {
       ) : null}
       {!loading && !error && groups.length === 0 ? (
         <p className="py-10 text-center text-sm text-mute">
-          该时间范围内无事件。
+          该筛选下无事件。
         </p>
       ) : null}
 
@@ -105,6 +148,9 @@ export function CalendarPanel() {
         ))}
       </div>
 
+      <p className="mt-3 text-center text-[11px] text-mute">
+        解锁/上币为相对日程参考；宏观来自公开日历源
+      </p>
       <Disclaimer />
     </div>
   );

@@ -43,8 +43,9 @@ Node ≥ 20.19（本地 20.12 可用但有引擎告警）。
 ## 数据
 
 - `mock`：本地确定性假数据
-- `live`：点位 ← Binance 4h；快讯 ← RSS；多空 ← Gate；日历 ← Forex Factory 本周（失败用内置周样本缓存，仍标 live）
-- 日历 live 以宏观为主（解锁/上币仍靠 mock 或后续专用源）
+- `live`：点位 ← Binance 4h；快讯 ← 华尔街见闻 blockchain（失败再 RSS）；多空 ← Gate；日历 ← Forex Factory 宏观 + 解锁/上币相对日程
+- 自选币：浏览器 `localStorage`（点位页；首页胶带跟自选前 3）
+- 解锁 API 多为付费/不可达，故解锁/上币用相对日程模板，接真源后可替换
 
 ## 文档
 
