@@ -1,11 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   classifyFfEvent,
+  fetchFfCalendar,
   filterCalendarHorizon,
   parseFfCalendar,
 } from "@/lib/providers/ff-calendar";
 
 describe("ff-calendar", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
   it("classifies meeting vs macro", () => {
     expect(classifyFfEvent("FOMC Meeting")).toBe("会议");
     expect(classifyFfEvent("Non-Farm Payrolls")).toBe("宏观");
@@ -53,5 +59,17 @@ describe("ff-calendar", () => {
     ]);
     expect(filterCalendarHorizon(events, 7, now)).toHaveLength(2);
     expect(filterCalendarHorizon(events, 30, now)).toHaveLength(3);
+  });
+
+  it("marks fresh false when network fails and bootstrap used", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("network down");
+      }),
+    );
+    const { events, fresh } = await fetchFfCalendar(7);
+    expect(fresh).toBe(false);
+    expect(events.length).toBeGreaterThan(0);
   });
 });

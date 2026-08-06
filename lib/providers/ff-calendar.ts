@@ -98,10 +98,13 @@ export async function fetchFfCalendar(
   days: 7 | 30,
   feedUrl =
     process.env.CALENDAR_FF_URL?.trim() || DEFAULT_FF_CALENDAR_URL,
-): Promise<CalendarEvent[]> {
+): Promise<{ events: CalendarEvent[]; fresh: boolean }> {
   const cached = ensureBootstrapCache(feedUrl);
   if (ffCache && Date.now() - ffCache.at < FF_TTL_MS && ffCache.at > 0) {
-    return filterCalendarHorizon(cached, days);
+    return {
+      events: filterCalendarHorizon(cached, days),
+      fresh: true,
+    };
   }
 
   try {
@@ -120,10 +123,16 @@ export async function fetchFfCalendar(
     const json: unknown = await res.json();
     const all = parseFfCalendar(json);
     ffCache = { at: Date.now(), events: all, url: feedUrl };
-    return filterCalendarHorizon(all, days);
+    return {
+      events: filterCalendarHorizon(all, days),
+      fresh: true,
+    };
   } catch (err) {
-    // Stale / bootstrap beats mock when FF rate-limits (common).
+    // Stale / bootstrap beats empty calendar when FF rate-limits (common).
     console.warn("[calendar] FF fetch failed, using cached week", err);
-    return filterCalendarHorizon(cached, days);
+    return {
+      events: filterCalendarHorizon(cached, days),
+      fresh: false,
+    };
   }
 }

@@ -115,12 +115,12 @@ export async function resolveCalendar(
   }
 
   try {
-    const macro = await fetchFfCalendar(days);
+    const { events: macro, fresh } = await fetchFfCalendar(days);
     const events = mergeCalendarEvents(macro, crypto);
     if (events.length === 0) {
       throw new Error("calendar empty");
     }
-    return { events, source: "live" };
+    return { events, source: fresh ? "live" : "mock" };
   } catch (err) {
     console.error("[calendar] live FF failed, using crypto + mock", err);
     return {
