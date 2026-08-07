@@ -1,15 +1,47 @@
 ---
-description: 点讯 DianXun 项目约定 — 栈、边界、数据模式
+description: 点讯产品与工程硬规则 — 改任何代码前必读
 alwaysApply: true
 ---
 
-# 点讯 agent 规则
+# 点讯 · 当前规则
 
-读根目录 `AGENTS.md` 作完整地图。摘要：
+完整地图见 `AGENTS.md`。后续改动必须遵守本文件 + `dianxun-ui.mdc`。
 
-- 栈：Next.js 15 App Router / TS / Tailwind v4 / Vitest / Playwright
-- 数据：`DATA_MODE=mock|live`；降级经 `lib/providers/resolve*`；UI 明示 `dataSource`/`degraded`
-- 测：新行为先写测；`npm run test` 门禁
-- 禁：提交 secrets、擅自部署 Vercel、提交 `.cursor/skills` 垃圾、做交易下单
-- UI：系统主题；中文文案；壳在 `components/shell/`
-- 架构决策：`docs/adrs/0001-mvp-architecture.md`
+## 产品边界
+
+- 中文零售加密资讯壳：快讯 / ATR 点位 / 多空 / 大事日历
+- 不做撮合、下单、账户、持仓同步
+- 不擅自部署 Vercel；不提交 `.env*`、密钥、`dianxun-debug.apk`、`.cursor/skills/**`
+
+## 栈与结构
+
+- Next.js 15 App Router · React 19 · TS · Tailwind v4 · Vitest · Playwright
+- UI：`app/(tabs)/` + `components/{news,levels,sentiment,calendar,shell}/`
+- API：`app/api/**` Route Handlers；扩数据只动 `lib/providers` + `resolve*`
+- 架构决策先看 `docs/adrs/`；有冲突以 ADR 为准
+
+## 数据模式
+
+- `DATA_MODE=mock|live`（本机 `.env.local`，勿提交）
+- live 快讯：WSCN 优先（浏览器 UA；远端 `next_cursor`）→ 失败再 RSS → 再 mock
+- 凡对外 API 响应带 `dataSource` + `degraded`；UI 用 `DataSourceBanner` / `EmptyState` / `OfflineBanner`
+- Provider 失败必须可降级，禁止裸 throw 打崩页
+
+## 快讯列表
+
+- 首页「最新动态」：滚到底触底加载；触发后延迟约 2s 再请求
+- 游标不透明字符串（WSCN 形如 `ts,ts`）；API 校验 `/^[\d,]+$/`
+- 列表整行进 `/news/[id]`；详情优先 `sessionStorage` 缓存（`lib/news-cache`）
+
+## 壳与可达
+
+- 滚动容器是 `AppShell` 的 `<main>`，不是 `window`
+- Capacitor WebView 指向 cpolar HTTPS；隧道域名变了要改 `capacitor.config.ts` 并重打 APK
+- 本机联调常开：`DATA_MODE=live` + `next start` + `cpolar http 3000 -region=cn`
+
+## 工程纪律
+
+- 中文 UI 文案；标识符英文
+- 新行为先测（TDD）；`*.test.ts` 紧挨源文件
+- 改 UI 尽量不动 API 契约；问清再加重组件/依赖
+- 提交 / 推远程仅当用户明确要求

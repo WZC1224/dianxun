@@ -1,0 +1,61 @@
+---
+description: 点讯 UI 通用规则 — 视觉、组件、交互
+globs: app/**/*.{tsx,css},components/**/*.tsx
+alwaysApply: false
+---
+
+# 点讯 · UI 规则
+
+改 `app/` / `components/` 时遵守。设计证据在 `app/globals.css` 与现有壳组件。
+
+## Token（勿另起一套）
+
+| Token | 用途 |
+|-------|------|
+| `board` | 页面底 |
+| `slip` | 面板面 |
+| `ink` / `mute` | 主/次文字 |
+| `live` | 实时/强调（青绿） |
+| `long` / `short` | 多/空 |
+| `rule` | 分割线/描边 |
+| `--radius: 8px` | 圆角 |
+
+- 用 Tailwind 语义色：`bg-board` `text-ink` `border-rule` `text-live` 等
+- 主题跟系统 `prefers-color-scheme`；**禁止**加独立暗色开关
+- 字体：正文 Plex Sans；数字/时间 `font-data`（mono）；标题可 `font-display`
+
+## 布局壳
+
+- 外框：`AppShell` — `h-[100dvh]`、`max-w-lg`、居中；内容在 `<main className="… overflow-y-auto">`
+- sticky 胶带 / 底栏勿破坏 `main` 滚动；触底加载用 `main` 作 IntersectionObserver `root`
+- 列表容器优先 `.panel`；行用现有 `flash-row` 等，勿新造卡片堆
+
+## 组件约定
+
+- 空态 / 错态：`EmptyState`；离线：`OfflineBanner`；数据源：`DataSourceBanner`
+- 免责：`Disclaimer`；安装：`InstallPrompt`
+- 下级页返回：左缘右滑 / 系统返回 → `EdgeBackGesture`（Tab 根双滑退出）
+- 点位图：只在 ATR 点位用 `LevelsMiniChart`；多空已有比条；日历不要硬塞图
+
+## 文案与密度
+
+- 全中文产品文案；来源名可保留原文品牌
+- 一屏一事：少 pill、少统计条、少浮动徽章
+- 动效克制：沿用 `live-dot` / `flash-row` / `nav-indicator`；尊重 `prefers-reduced-motion`
+
+## 禁止（anti-slop）
+
+- 禁止紫靛渐变万能主题、奶油衬线 Terracotta、报纸密栏默认脸
+- 禁止为「好看」加多层阴影、全圆 pill 簇、emoji 装饰
+- 禁止脱离 token 写死大段 hex（改 token 或问清）
+- 新页面必须像点讯：去掉 nav 仍能认出 board/slip/live 气质
+
+## 改动自检
+
+```
+□ 用现有 token / .panel / shell 组件？
+□ 浅色+深色系统主题都可读？
+□ 滚动仍在 main？触底逻辑未绑 window？
+□ 空/错/降级有 Banner 或 EmptyState？
+□ 未引入无关 UI 库？
+```

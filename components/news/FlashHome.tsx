@@ -23,6 +23,8 @@ type SourceState = {
   degraded?: boolean;
 };
 
+const LOAD_MORE_DELAY_MS = 2000;
+
 export function FlashHome() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [cursor, setCursor] = useState<string | undefined>();
@@ -35,6 +37,7 @@ export function FlashHome() {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const cursorRef = useRef<string | undefined>(undefined);
   const loadingMoreRef = useRef(false);
+  const loadMoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async (next?: string, append = false) => {
     if (append) {
@@ -42,6 +45,10 @@ export function FlashHome() {
       loadingMoreRef.current = true;
       setLoadingMore(true);
     } else {
+      if (loadMoreTimerRef.current) {
+        clearTimeout(loadMoreTimerRef.current);
+        loadMoreTimerRef.current = null;
+      }
       setLoading(true);
     }
     setError(null);
@@ -77,6 +84,16 @@ export function FlashHome() {
     }
   }, []);
 
+  const tryLoadMore = useCallback(() => {
+    const next = cursorRef.current;
+    if (!next || loadingMoreRef.current || loadMoreTimerRef.current) return;
+    setLoadingMore(true);
+    loadMoreTimerRef.current = setTimeout(() => {
+      loadMoreTimerRef.current = null;
+      void load(next, true);
+    }, LOAD_MORE_DELAY_MS);
+  }, [load]);
+
   const loadTape = useCallback(() => {
     const watch = readWatchlist().slice(0, 3);
     const qs = new URLSearchParams({ symbols: watch.join(",") });
@@ -110,21 +127,40 @@ export function FlashHome() {
     const node = sentinelRef.current;
     if (!node) return;
     const root =
-      node.closest("main") ??
+      (node.closest("main") as HTMLElement | null) ??
       (document.querySelector("main") as HTMLElement | null);
+
+    const nearBottom = () => {
+      if (!root) return false;
+      return root.scrollTop + root.clientHeight >= root.scrollHeight - 160;
+    };
+
+    const onScroll = () => {
+      if (nearBottom()) tryLoadMore();
+    };
+
     const io = new IntersectionObserver(
       (entries) => {
-        const hit = entries.some((e) => e.isIntersecting);
-        if (!hit) return;
-        const next = cursorRef.current;
-        if (!next || loadingMoreRef.current) return;
-        void load(next, true);
+        if (entries.some((e) => e.isIntersecting)) tryLoadMore();
       },
-      { root, rootMargin: "120px 0px", threshold: 0 },
+      { root, rootMargin: "160px 0px", threshold: 0 },
     );
     io.observe(node);
-    return () => io.disconnect();
-  }, [load, items.length, cursor]);
+    root?.addEventListener("scroll", onScroll, { passive: true });
+    // First paint may already put sentinel in view (short list).
+    if (nearBottom() || (root && root.scrollHeight <= root.clientHeight + 8)) {
+      tryLoadMore();
+    }
+
+    return () => {
+      io.disconnect();
+      root?.removeEventListener("scroll", onScroll);
+      if (loadMoreTimerRef.current) {
+        clearTimeout(loadMoreTimerRef.current);
+        loadMoreTimerRef.current = null;
+      }
+    };
+  }, [tryLoadMore, items.length, cursor]);
 
   return (
     <div className="flex min-h-full flex-col">

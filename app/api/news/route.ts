@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
       ? Math.min(Math.max(Math.trunc(rawLimit), 1), 50)
       : 10;
     const cursor = req.nextUrl.searchParams.get("cursor") ?? undefined;
-    if (cursor !== undefined && !/^\d+$/.test(cursor)) {
+    // Numeric offset (mock/RSS) or WSCN opaque `ts,ts`.
+    if (cursor !== undefined && !/^[\d,]+$/.test(cursor)) {
       api.finish({ route: "/api/news", status: 400 });
       return NextResponse.json(
         { error: "无效游标" },

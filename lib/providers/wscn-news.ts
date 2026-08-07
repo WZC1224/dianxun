@@ -5,6 +5,15 @@ import type { NewsProvider } from "@/lib/providers/news-types";
 export const DEFAULT_WSCN_ARTICLES_URL =
   "https://api.wallstreetcn.com/apiv1/content/articles";
 
+/** Browser-like UA — custom bot UA gets empty `data:""` from WSCN. */
+const WSCN_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+/** WSCN remote cursor looks like `1786069876,1786058443`. */
+export function isWscnCursor(cursor: string): boolean {
+  return /^[\d,]+$/.test(cursor);
+}
+
 type WscnArticle = {
   id?: number | string;
   title?: string;
@@ -18,19 +27,25 @@ type WscnArticle = {
 
 type WscnResponse = {
   code?: number;
-  data?: { items?: WscnArticle[] };
+  data?: { items?: WscnArticle[]; next_cursor?: string } | string | null;
 };
 
 export function parseWscnArticles(
   raw: unknown,
   sourceFallback: string,
-): NewsItem[] {
+): { items: NewsItem[]; nextCursor?: string } {
   const body = raw as WscnResponse;
-  if (body?.code !== 20000 || !Array.isArray(body.data?.items)) {
+  const data = body?.data;
+  if (
+    body?.code !== 20000 ||
+    !data ||
+    typeof data !== "object" ||
+    !Array.isArray(data.items)
+  ) {
     throw new ProviderError("WSCN payload invalid", "PARSE");
   }
   const items: NewsItem[] = [];
-  for (const row of body.data.items) {
+  for (const row of data.items) {
     if (!row?.title || row.id == null) continue;
     const ts = Number(row.display_time);
     if (!Number.isFinite(ts) || ts <= 0) continue;
@@ -52,7 +67,11 @@ export function parseWscnArticles(
   if (items.length === 0) {
     throw new ProviderError("WSCN articles empty", "EMPTY");
   }
-  return items;
+  const next =
+    typeof data.next_cursor === "string" && data.next_cursor.trim()
+      ? data.next_cursor.trim()
+      : undefined;
+  return { items, nextCursor: next };
 }
 
 export class WscnNewsProvider implements NewsProvider {
@@ -68,19 +87,21 @@ export class WscnNewsProvider implements NewsProvider {
 
   async listFlash(params: { limit: number; cursor?: string }) {
     const limit = Math.min(Math.max(params.limit, 1), 50);
-    const start = params.cursor ? Number(params.cursor) : 0;
-    if (!Number.isFinite(start) || start < 0) {
+    if (params.cursor !== undefined && !isWscnCursor(params.cursor)) {
       throw new ProviderError("bad cursor", "PARSE");
     }
-    // API page param is unreliable; pull a window then slice locally.
-    const fetchLimit = Math.min(Math.max(start + limit, limit), 50);
-    const url = `${this.baseUrl}?channel=${encodeURIComponent(this.channel)}&limit=${fetchLimit}`;
+    const qs = new URLSearchParams({
+      channel: this.channel,
+      limit: String(limit),
+    });
+    if (params.cursor) qs.set("cursor", params.cursor);
+    const url = `${this.baseUrl}?${qs}`;
     let res: Response;
     try {
       res = await fetch(url, {
         headers: {
           Accept: "application/json",
-          "User-Agent": "dianxun/0.1 (+https://github.com/WZC1224/dianxun)",
+          "User-Agent": WSCN_UA,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(12_000),
@@ -92,12 +113,6 @@ export class WscnNewsProvider implements NewsProvider {
       throw new ProviderError(`WSCN HTTP ${res.status}`, "FETCH");
     }
     const json: unknown = await res.json();
-    const all = parseWscnArticles(json, this.sourceLabel);
-    const items = all.slice(start, start + limit);
-    const next = start + items.length;
-    return {
-      items,
-      nextCursor: next < all.length ? String(next) : undefined,
-    };
+    return parseWscnArticles(json, this.sourceLabel);
   }
 }

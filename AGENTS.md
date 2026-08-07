@@ -38,6 +38,7 @@
 
 ## Conventions
 
+- **改代码必须遵循** `.cursor/rules/dianxun.mdc`（始终）与 `.cursor/rules/dianxun-ui.mdc`（UI）
 - 中文 UI 文案；技术标识符英文
 - Provider 失败必须可降级；UI 用 `DataSourceBanner` / `EmptyState` / `OfflineBanner`
 - 主题跟系统 `prefers-color-scheme`；勿擅自加独立暗色开关
