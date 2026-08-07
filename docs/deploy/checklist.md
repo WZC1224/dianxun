@@ -24,7 +24,10 @@
 | 代码质量门（本地） | **GO** |
 | CI 文件已就绪 | **GO** |
 | 生产主机 / Vercel | **GO** — https://dianxun.vercel.app （`DATA_MODE=mock`） |
-| 域名 HTTPS | **GO**（`*.vercel.app` 默认证） |
+| Cloudflare Workers（国内试） | **NO-GO** — https://dianxun.wzc1224-dianxun.workers.dev 无代理不通 |
+| 本机 + cpolar 隧道 | **GO** — https://546b0139.r8.cpolar.cn（会变；电脑须常开） |
+| Android debug 壳 | **GO** — `dianxun-debug.apk`（侧载说明见 `docs/deploy/android-sideload.md`） |
+| 域名 HTTPS | **GO**（`*.vercel.app` / `*.workers.dev` 默认证） |
 | 外部错误监控（Sentry 等） | **NO-GO**（可选；日志先行） |
 
 **结论：** 公网预览已开（mock）。切 `DATA_MODE=live` 前再冒烟四 Tab + 日志。

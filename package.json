@@ -2,6 +2,9 @@
   "name": "dianxun",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "dev:fresh": "node scripts/dev-fresh.cjs",
@@ -12,9 +15,19 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "icons": "node scripts/render-icons.cjs"
+    "icons": "node scripts/render-icons.cjs",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "cap:sync": "npx cap sync android",
+    "apk:debug": "npx cap sync android && cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@opennextjs/cloudflare": "^1.20.2",
     "@phosphor-icons/react": "^2.1.10",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
@@ -35,6 +48,7 @@
     "sharp": "^0.34.2",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "2.1.9"
+    "vitest": "2.1.9",
+    "wrangler": "^4.119.0"
   }
 }
