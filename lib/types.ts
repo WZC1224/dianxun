@@ -18,6 +18,8 @@ export type LevelSnapshot = {
   updatedAt: string;
   method: string;
   note: string;
+  /** Recent 4h OHLC for mini chart (optional). */
+  bars?: OhlcBar[];
 };
 
 export type OhlcBar = {

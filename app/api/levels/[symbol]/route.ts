@@ -25,6 +25,7 @@ export async function GET(
     if (source === "live") {
       levels.method = `${levels.method} · Binance 4h`;
     }
+    levels.bars = bars.slice(-40);
     const meta = dataSourceMeta(source);
     api.finish({
       route: "/api/levels/[symbol]",

@@ -15,6 +15,15 @@ WebView 打开 cpolar HTTPS。电脑必须开着：`npm start` + `cpolar http 30
 
 打不开：本机隧道是否在线、URL 是否和壳里一致。
 
+## 侧滑返回 / 退出
+
+左缘右滑：
+
+- 详情等下级页 → `history.back`
+- 四个 Tab 根页 → Toast「再滑一次退出应用」；2 秒内再滑 → 原生 `App.exitApp()`（网页只提示无法退出）
+
+Android 实体返回键同逻辑。实现：`components/shell/EdgeBackGesture.tsx`。
+
 ## 隧道 URL 变了以后重打壳
 
 ```powershell
@@ -32,7 +41,7 @@ copy app\build\outputs\apk\debug\app-debug.apk ..\dianxun-debug.apk
 
 ```powershell
 nvm use 22
-$env:DATA_MODE = "mock"
+$env:DATA_MODE = "live"
 npm run start
 # 另开窗口：
 .\.tools\cpolar\cpolar.exe http 3000 -region=cn

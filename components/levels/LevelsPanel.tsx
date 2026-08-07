@@ -12,6 +12,7 @@ import {
   toggleWatchlist,
   type LevelSymbol,
 } from "@/lib/watchlist";
+import { LevelsMiniChart } from "@/components/levels/LevelsMiniChart";
 
 export function LevelsPanel() {
   const [watchlist, setWatchlist] = useState<LevelSymbol[]>(DEFAULT_WATCH);
@@ -126,6 +127,9 @@ export function LevelsPanel() {
 
       {data && !loading ? (
         <div className="panel space-y-0 divide-y divide-rule overflow-hidden">
+          {data.bars && data.bars.length > 0 ? (
+            <LevelsMiniChart bars={data.bars} levels={data} />
+          ) : null}
           <Metric
             label={data.sideBias === "short" ? "卖出区间" : "买入区间"}
             value={`${fmt(data.entryLow)} – ${fmt(data.entryHigh)}`}

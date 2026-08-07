@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const SERVER_URL =
-  process.env.CAPACITOR_SERVER_URL ?? "https://546b0139.r8.cpolar.cn";
+  process.env.CAPACITOR_SERVER_URL ?? "https://394d627a.r8.cpolar.cn";
 
 const config: CapacitorConfig = {
   appId: "app.dianxun.shell",

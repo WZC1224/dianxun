@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { NewsItem } from "@/lib/types";
 import { formatClock, formatRelativeTime } from "@/lib/time";
 import { putNewsItems } from "@/lib/news-cache";
@@ -31,8 +31,19 @@ export function FlashHome() {
   const [tapeSource, setTapeSource] = useState<SourceState>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const cursorRef = useRef<string | undefined>(undefined);
+  const loadingMoreRef = useRef(false);
 
   const load = useCallback(async (next?: string, append = false) => {
+    if (append) {
+      if (loadingMoreRef.current || !next) return;
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     try {
       const qs = new URLSearchParams({ limit: "10" });
@@ -47,6 +58,7 @@ export function FlashHome() {
       };
       putNewsItems(data.items);
       setItems((prev) => (append ? [...prev, ...data.items] : data.items));
+      cursorRef.current = data.nextCursor;
       setCursor(data.nextCursor);
       if (!append) {
         setNewsSource({
@@ -55,9 +67,13 @@ export function FlashHome() {
         });
       }
     } catch {
-      setError(networkErrorMessage("快讯加载失败。检查网络后重试。"));
+      if (!append) {
+        setError(networkErrorMessage("快讯加载失败。检查网络后重试。"));
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      loadingMoreRef.current = false;
     }
   }, []);
 
@@ -89,6 +105,26 @@ export function FlashHome() {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [load, loadTape]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+    const root =
+      node.closest("main") ??
+      (document.querySelector("main") as HTMLElement | null);
+    const io = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.some((e) => e.isIntersecting);
+        if (!hit) return;
+        const next = cursorRef.current;
+        if (!next || loadingMoreRef.current) return;
+        void load(next, true);
+      },
+      { root, rootMargin: "120px 0px", threshold: 0 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [load, items.length, cursor]);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -223,14 +259,12 @@ export function FlashHome() {
           ))}
         </ol>
 
-        {cursor ? (
-          <button
-            type="button"
-            className="panel mt-3 w-full py-2.5 text-sm text-mute transition-colors hover:text-ink"
-            onClick={() => void load(cursor, true)}
-          >
-            加载更多
-          </button>
+        <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
+        {loadingMore ? (
+          <p className="mt-3 py-2 text-center text-sm text-mute">加载更多...</p>
+        ) : null}
+        {!loading && !loadingMore && items.length > 0 && !cursor ? (
+          <p className="mt-3 py-2 text-center text-xs text-mute">已加载全部</p>
         ) : null}
 
         <div className="pb-4 pt-3">
