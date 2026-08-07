@@ -23,9 +23,9 @@
 |----|------|
 | 代码质量门（本地） | **GO** |
 | CI 文件已就绪 | **GO** |
-| 生产主机 / Vercel | **GO** — https://dianxun.vercel.app （`DATA_MODE=mock`） |
+| 生产主机 / Vercel | **GO** — https://dianxun.vercel.app （`DATA_MODE=live`） |
 | Cloudflare Workers（国内试） | **NO-GO** — https://dianxun.wzc1224-dianxun.workers.dev 无代理不通 |
-| 本机 + cpolar 隧道 | **GO** — https://546b0139.r8.cpolar.cn（会变；电脑须常开） |
+| 本机 + cpolar 隧道 | **GO** — 壳用；本机 `DATA_MODE=live`（域名会变） |
 | Android debug 壳 | **GO** — `dianxun-debug.apk`（侧载说明见 `docs/deploy/android-sideload.md`） |
 | 域名 HTTPS | **GO**（`*.vercel.app` / `*.workers.dev` 默认证） |
 | 外部错误监控（Sentry 等） | **NO-GO**（可选；日志先行） |
@@ -38,7 +38,7 @@
 - [ ] 确认 Actions `CI` workflow 绿（本机无 `gh`；浏览器看 Actions）
 - [ ] GitHub → Settings → Branches：Require status checks（可选加固）
 - [x] Vercel 项目联通（`wzc1224s-projects/dianxun`，已连 GitHub）
-- [x] 生产环境变量：`DATA_MODE=mock`（要 live 时在 Vercel Env 改并 Redeploy）
+- [x] 生产环境变量：`DATA_MODE=live`（2026-08-07 已切并 Redeploy）
 - [x] 生产域名 HTTPS：https://dianxun.vercel.app
 
 ## 上线后（Vercel 开通时）

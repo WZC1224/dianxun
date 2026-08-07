@@ -11,12 +11,13 @@ const TITLES: Record<string, string> = {
 
 export function TopBar() {
   const pathname = usePathname();
-  const title =
-    Object.entries(TITLES).find(([href]) =>
-      href === "/"
-        ? pathname === "/"
-        : pathname === href || pathname.startsWith(`${href}/`),
-    )?.[1] ?? "点讯";
+  const title = pathname.startsWith("/news/")
+    ? "详情"
+    : (Object.entries(TITLES).find(([href]) =>
+        href === "/"
+          ? pathname === "/"
+          : pathname === href || pathname.startsWith(`${href}/`),
+      )?.[1] ?? "点讯");
 
   return (
     <header

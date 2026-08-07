@@ -11,7 +11,13 @@ const config: CapacitorConfig = {
     url: SERVER_URL,
     cleartext: false,
     androidScheme: "https",
-    allowNavigation: ["*.cpolar.cn", "*.cpolar.com", "*.r8.cpolar.cn"],
+    allowNavigation: [
+      "*.cpolar.cn",
+      "*.cpolar.com",
+      "*.r8.cpolar.cn",
+      "*.vercel.app",
+      "dianxun.vercel.app",
+    ],
   },
   android: {
     allowMixedContent: false,

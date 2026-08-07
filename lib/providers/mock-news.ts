@@ -39,9 +39,12 @@ export class MockNewsProvider implements NewsProvider {
       const idx = start + i;
       if (idx >= TITLES.length * 2) break;
       const title = TITLES[idx % TITLES.length];
+      const displayTitle =
+        idx >= TITLES.length ? `${title}（跟踪）` : title;
       items.push({
         id: `news-${idx}`,
-        title: idx >= TITLES.length ? `${title}（跟踪）` : title,
+        title: displayTitle,
+        summary: `【模拟】${displayTitle}。本条为 mock 摘要，便于应用内详情预览；接入 live 源后将显示真实短讯。`,
         source: SOURCES[idx % SOURCES.length],
         publishedAt: new Date(now - (idx + 1) * 7 * 60_000).toISOString(),
         symbols: idx % 3 === 0 ? ["BTC"] : idx % 3 === 1 ? ["ETH"] : ["SOL"],

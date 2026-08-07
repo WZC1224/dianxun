@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { NewsItem } from "@/lib/types";
 import { formatClock, formatRelativeTime } from "@/lib/time";
+import { putNewsItems } from "@/lib/news-cache";
 import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { Disclaimer } from "@/components/shell/Disclaimer";
 import { EmptyState } from "@/components/shell/EmptyState";
@@ -43,6 +45,7 @@ export function FlashHome() {
         dataSource?: "live" | "mock";
         degraded?: boolean;
       };
+      putNewsItems(data.items);
       setItems((prev) => (append ? [...prev, ...data.items] : data.items));
       setCursor(data.nextCursor);
       if (!append) {
@@ -197,33 +200,25 @@ export function FlashHome() {
           {items.map((item, i) => (
             <li
               key={item.id}
-              className="flash-row px-3 py-3.5"
+              className="flash-row"
               style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
             >
-              <div className="flex gap-3">
+              <Link
+                href={`/news/${encodeURIComponent(item.id)}`}
+                className="flex gap-3 px-3 py-3.5 transition-colors hover:bg-slip"
+              >
                 <time className="font-data w-12 shrink-0 pt-0.5 text-[11px] text-live">
                   {formatClock(item.publishedAt)}
                 </time>
                 <div className="min-w-0 flex-1">
-                  {item.url ? (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[15px] leading-snug text-ink hover:text-live"
-                    >
-                      {item.title}
-                    </a>
-                  ) : (
-                    <p className="text-[15px] leading-snug text-ink">
-                      {item.title}
-                    </p>
-                  )}
+                  <p className="text-[15px] leading-snug text-ink">
+                    {item.title}
+                  </p>
                   <p className="mt-1.5 text-[11px] text-mute">
                     {item.source} · {formatRelativeTime(item.publishedAt)}
                   </p>
                 </div>
-              </div>
+              </Link>
             </li>
           ))}
         </ol>
